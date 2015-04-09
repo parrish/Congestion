@@ -42,20 +42,28 @@ limiter.backoff       # => the number of seconds before a request will be permit
 
 ### Configuration
 
+A proc provides a Redis connection:
+```ruby
+Congestion.redis = ->{
+  Redis.new(your_redis_config)
+}
+```
+
 Global options can be set with:
 
 ```ruby
-  Congestion.default_options = {
-    interval: 1,        # The timeframe to limit within in seconds
-    max_in_interval: 1, # The number of allowed requests within the interval
-    min_delay: 0.0      # The minimum amount of time in seconds between requests
-  }
+Congestion.default_options = {
+  namespace: 'congestion' # The Redis key prefix (e.g. 'congestion:some_key')
+  interval: 1,            # The timeframe to limit within in seconds
+  max_in_interval: 1,     # The number of allowed requests within the interval
+  min_delay: 0.0          # The minimum amount of time in seconds between requests
+}
 ```
 
 Per-request options can be set as well:
 
 ```ruby
-  Congestion.request 'some_key', interval: 60, min_delay: 1
+Congestion.request 'some_key', interval: 60, min_delay: 1
 ```
 
 ## Development
