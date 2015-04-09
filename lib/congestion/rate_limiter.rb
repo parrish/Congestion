@@ -10,6 +10,20 @@ module Congestion
       self.options[:min_delay] *= 1_000
     end
 
+    def total_requests
+      get_requests[1]
+    end
+
+    def first_request
+      first = get_requests[2].first
+      first ? first.to_i : nil
+    end
+
+    def last_request
+      last = get_requests[3].first
+      last ? last.to_i : nil
+    end
+
     protected
 
     def current_time

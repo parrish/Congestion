@@ -1,17 +1,7 @@
 require 'spec_helper'
 
 describe Congestion::RateLimiter do
-  let(:limiter) do
-    Congestion.request('key', {
-      namespace: 'test',
-      interval: 10,
-      min_delay: 5
-    })
-  end
-
-  def call_protected(*args)
-    limiter.send *args
-  end
+  include_context 'limiter helpers'
 
   describe '#initialize' do
     subject{ limiter }
@@ -53,27 +43,8 @@ describe Congestion::RateLimiter do
 
   describe '#get_requests' do
     subject{ call_protected :get_requests }
-    let(:now){ call_protected :current_time }
-
-    def seconds_ago(n)
-      now - n * 1_000
-    end
-
-    def add_request(time)
-      limiter.redis.zadd limiter.key, time, time
-    end
-
-    def clear_expired
-      expired_at = call_protected :expired_at
-      limiter.redis.zremrangebyscore limiter.key, 0, expired_at
-    end
-
-    def get_values
-      limiter.redis.zrange(limiter.key, 0, -1).map &:to_i
-    end
 
     before(:each) do
-      limiter.redis.flushall
       [1, 2, 3, 10, 20].each do |n|
         add_request seconds_ago n
       end
@@ -126,6 +97,60 @@ describe Congestion::RateLimiter do
           get_values.length
         }
       end
+    end
+  end
+
+  describe '#total_requests' do
+    subject{ limiter.total_requests }
+
+    context 'when requests exist' do
+      before(:each) do
+        [1, 2, 3].each do |n|
+          add_request seconds_ago n
+        end
+      end
+
+      it{ is_expected.to eql 3 }
+    end
+
+    context 'when requests do not exist' do
+      it{ is_expected.to eql 0 }
+    end
+  end
+
+  describe '#first_request' do
+    subject{ limiter.first_request }
+
+    context 'when requests exist' do
+      before(:each) do
+        [1, 2, 3].each do |n|
+          add_request seconds_ago n
+        end
+      end
+
+      it{ is_expected.to eql seconds_ago(3) }
+    end
+
+    context 'when requests do not exist' do
+      it{ is_expected.to be nil }
+    end
+  end
+
+  describe '#last_request' do
+    subject{ limiter.last_request }
+
+    context 'when requests exist' do
+      before(:each) do
+        [1, 2, 3].each do |n|
+          add_request seconds_ago n
+        end
+      end
+
+      it{ is_expected.to eql seconds_ago(1) }
+    end
+
+    context 'when requests do not exist' do
+      it{ is_expected.to be nil }
     end
   end
 end
