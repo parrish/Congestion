@@ -21,7 +21,9 @@ module Congestion
     end
 
     def add_request
-      redis.zadd key, current_time, current_time
+      unless options[:track_rejected]
+        redis.zadd key, current_time, current_time
+      end
     end
 
     def get_requests
@@ -31,6 +33,9 @@ module Congestion
         t.zrange key, 0, 0                      # [2] - first request
         t.zrange key, -1, -1                    # [3] - last request
         t.pexpire key, options[:interval]       # [4] - expire request key
+
+        # [5] - Add the request if tracking rejected
+        t.zadd(key, current_time, current_time) if options[:track_rejected]
       end
     end
   end

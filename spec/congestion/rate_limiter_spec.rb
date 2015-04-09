@@ -39,6 +39,7 @@ describe Congestion::RateLimiter do
   end
 
   describe '#add_request' do
+    before(:each){ limiter.options[:track_rejected] = false }
     subject{ call_protected :add_request }
     it{ is_expected.to be true }
 
@@ -62,6 +63,11 @@ describe Congestion::RateLimiter do
       limiter.redis.zadd limiter.key, time, time
     end
 
+    def clear_expired
+      expired_at = call_protected :expired_at
+      limiter.redis.zremrangebyscore limiter.key, 0, expired_at
+    end
+
     def get_values
       limiter.redis.zrange(limiter.key, 0, -1).map &:to_i
     end
@@ -77,7 +83,6 @@ describe Congestion::RateLimiter do
     its([1]){ is_expected.to eql 3 } # 3 current requests
     its([2]){ is_expected.to eql [seconds_ago(3).to_s] } # first request
     its([3]){ is_expected.to eql [seconds_ago(1).to_s] } # last request
-    its([4]){ is_expected.to be true }
 
     it 'should clear old requests' do
       subject
@@ -89,6 +94,38 @@ describe Congestion::RateLimiter do
       subject
       ttl = limiter.redis.ttl limiter.key
       expect(ttl).to be_within(1).of 10 # the interval
+    end
+
+    context 'when tracking rejected' do
+      before(:each){ limiter.options[:track_rejected] = true }
+
+      its([4]){ is_expected.to be true }
+      its([5]){ is_expected.to be true }
+
+      it 'should track rejected requests' do
+        clear_expired
+        expect {
+          subject
+        }.to change {
+          get_values.length
+        }.by 1
+      end
+    end
+
+    context 'when not tracking rejected' do
+      before(:each){ limiter.options[:track_rejected] = false }
+
+      its([4]){ is_expected.to be true }
+      its([5]){ is_expected.to be nil }
+
+      it 'should not track rejected requests' do
+        clear_expired
+        expect {
+          subject
+        }.to_not change {
+          get_values.length
+        }
+      end
     end
   end
 end
