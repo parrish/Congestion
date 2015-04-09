@@ -43,10 +43,26 @@ limiter.backoff       # => the number of seconds before a request will be permit
 ### Configuration
 
 A proc provides a Redis connection:
+
 ```ruby
 Congestion.redis = ->{
-  Redis.new(your_redis_config)
+  Redis.new url: 'redis://:password@host:port/db'
 }
+```
+
+To pool, your Redis connections:
+
+```ruby
+require 'congestion/redis_pool'
+
+Congestion::RedisPool.redis_config = {
+  url: 'redis://:password@host:port/db'
+}
+
+Congestion::RedisPool.pool_size = 10  # number of connections to use
+Congestion::RedisPool.timeout = 10    # seconds before timing out an operation
+
+Congestion.redis = Congestion::RedisPool.instance
 ```
 
 Global options can be set with:
