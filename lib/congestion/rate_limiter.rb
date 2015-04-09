@@ -41,6 +41,18 @@ module Congestion
       time_since_last_request < options[:min_delay]
     end
 
+    def backoff
+      if too_many? && too_frequent?
+        [quantity_backoff, frequency_backoff].max
+      elsif too_many?
+        quantity_backoff
+      elsif too_frequent?
+        frequency_backoff
+      else
+        0
+      end
+    end
+
     protected
 
     def current_time
@@ -57,6 +69,16 @@ module Congestion
 
     def expired_at
       current_time - options[:interval]
+    end
+
+    def quantity_backoff
+      millis = options[:interval] - time_since_first_request
+      (millis / 1_000.0).ceil
+    end
+
+    def frequency_backoff
+      millis = options[:min_delay] - time_since_last_request
+      (millis / 1_000.0).ceil
     end
 
     def add_request

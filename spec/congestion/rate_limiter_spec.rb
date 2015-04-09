@@ -50,6 +50,26 @@ describe Congestion::RateLimiter do
     it{ is_expected.to eql call_protected(:current_time) - 10_000 }
   end
 
+  describe '#quantity_backoff' do
+    before(:each) do
+      limiter.options[:interval] = 2_000
+      stub_limiter time_since_first_request: 1500
+    end
+
+    subject{ call_protected :quantity_backoff }
+    it{ is_expected.to eql 1 }
+  end
+
+  describe '#frequency_backoff' do
+    before(:each) do
+      limiter.options[:min_delay] = 2_000
+      stub_limiter time_since_last_request: 500
+    end
+
+    subject{ call_protected :frequency_backoff }
+    it{ is_expected.to eql 2 }
+  end
+
   describe '#add_request' do
     before(:each){ limiter.options[:track_rejected] = false }
     subject{ call_protected :add_request }
@@ -272,6 +292,31 @@ describe Congestion::RateLimiter do
         expect(limiter.redis).to_not receive :zadd
         limiter.allowed?
       end
+    end
+  end
+
+  describe '#backoff' do
+    before(:each){ stub_limiter quantity_backoff: 1, frequency_backoff: 2 }
+    subject{ limiter.backoff }
+
+    context 'when allowed' do
+      before(:each){ stub_limiter too_many?: false, too_frequent?: false }
+      it{ is_expected.to eql 0 }
+    end
+
+    context 'when too many' do
+      before(:each){ stub_limiter too_many?: true, too_frequent?: false }
+      it{ is_expected.to eql 1 }
+    end
+
+    context 'when too frequent' do
+      before(:each){ stub_limiter too_many?: false, too_frequent?: true }
+      it{ is_expected.to eql 2 }
+    end
+
+    context 'when too many and too frequent' do
+      before(:each){ stub_limiter too_many?: true, too_frequent?: true }
+      it{ is_expected.to eql 2 }
     end
   end
 end
