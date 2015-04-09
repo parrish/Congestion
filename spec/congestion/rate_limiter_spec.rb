@@ -23,6 +23,28 @@ describe Congestion::RateLimiter do
     its(:object_id){ is_expected.to eql call_protected(:current_time).object_id }
   end
 
+  describe '#time_since_last_request' do
+    before(:each) do
+      [4, 2, 3].each do |n|
+        add_request seconds_ago n
+      end
+    end
+
+    subject{ call_protected :time_since_last_request }
+    it{ is_expected.to eql now - seconds_ago(2) }
+  end
+
+  describe '#time_since_first_request' do
+    before(:each) do
+      [3, 4, 2].each do |n|
+        add_request seconds_ago n
+      end
+    end
+
+    subject{ call_protected :time_since_first_request }
+    it{ is_expected.to eql now - seconds_ago(4) }
+  end
+
   describe '#expired_at' do
     subject{ call_protected :expired_at }
     it{ is_expected.to eql call_protected(:current_time) - 10_000 }
@@ -151,6 +173,105 @@ describe Congestion::RateLimiter do
 
     context 'when requests do not exist' do
       it{ is_expected.to be nil }
+    end
+  end
+
+  describe '#too_many?' do
+    subject{ limiter }
+    before(:each){ limiter.options[:max_in_interval] = 1 }
+
+    context 'when false' do
+      before(:each){ add_request seconds_ago 1 }
+      it{ is_expected.to_not be_too_many }
+    end
+
+    context 'when true' do
+      before(:each){ 2.times{ |i| add_request seconds_ago i } }
+      it{ is_expected.to be_too_many }
+    end
+  end
+
+  describe '#too_frequent?' do
+    subject{ limiter }
+    before(:each){ limiter.options[:min_delay] = 2 }
+
+    context 'when false' do
+      before(:each){ add_request seconds_ago 2 }
+      it{ is_expected.to_not be_too_frequent }
+    end
+
+    context 'when true' do
+      before(:each){ 2.times{ |i| add_request seconds_ago i } }
+      it{ is_expected.to be_too_frequent }
+    end
+  end
+
+  describe '#rejected?' do
+    subject{ limiter }
+
+    context 'when allowed' do
+      before(:each){ stub_limiter too_many?: false, too_frequent?: false }
+      it{ is_expected.to_not be_rejected }
+    end
+
+    context 'when too many' do
+      before(:each){ stub_limiter too_many?: true, too_frequent?: false }
+      it{ is_expected.to be_rejected }
+    end
+
+    context 'when too frequent' do
+      before(:each){ stub_limiter too_many?: false, too_frequent?: true }
+      it{ is_expected.to be_rejected }
+    end
+
+    context 'when too many and too frequent' do
+      before(:each){ stub_limiter too_many?: true, too_frequent?: true }
+      it{ is_expected.to be_rejected }
+    end
+  end
+
+  describe '#allowed?' do
+    subject{ limiter }
+
+    context 'when allowed' do
+      before(:each){ stub_limiter rejected?: false }
+
+      context 'when tracking rejected' do
+        before(:each){ limiter.options[:track_rejected] = true }
+        it{ is_expected.to be_allowed }
+
+        it 'should not #add_request' do
+          # because it's already added
+          expect(limiter.redis).to_not receive :zadd
+          limiter.allowed?
+        end
+      end
+
+      context 'when not tracking rejected' do
+        before(:each){ limiter.options[:track_rejected] = false }
+        it{ is_expected.to be_allowed }
+
+        it 'should #add_request' do
+          # because it hasn't been added yet
+          expect(limiter.redis).to receive :zadd
+          limiter.allowed?
+        end
+      end
+    end
+
+    context 'when rejected' do
+      before(:each) do
+        stub_limiter rejected?: true
+        limiter.options[:track_rejected] = false
+      end
+
+      it{ is_expected.to_not be_allowed }
+
+      it 'should not #add_request' do
+        # because it's already added
+        expect(limiter.redis).to_not receive :zadd
+        limiter.allowed?
+      end
     end
   end
 end

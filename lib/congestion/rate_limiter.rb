@@ -24,10 +24,35 @@ module Congestion
       last ? last.to_i : nil
     end
 
+    def allowed?
+      add_request unless rejected?
+      !rejected?
+    end
+
+    def rejected?
+      too_many? || too_frequent?
+    end
+
+    def too_many?
+      total_requests > options[:max_in_interval]
+    end
+
+    def too_frequent?
+      time_since_last_request < options[:min_delay]
+    end
+
     protected
 
     def current_time
       @current_time ||= (Time.now.utc.to_f * 1_000).round
+    end
+
+    def time_since_last_request
+      current_time - last_request
+    end
+
+    def time_since_first_request
+      current_time - first_request
     end
 
     def expired_at

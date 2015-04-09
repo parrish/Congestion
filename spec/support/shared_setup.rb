@@ -13,6 +13,12 @@ RSpec.shared_context 'limiter helpers' do
 
   let(:now){ call_protected :current_time }
 
+  def stub_limiter(stubs)
+    stubs.each_pair do |attr, return_value|
+      allow(limiter).to receive(attr).and_return return_value
+    end
+  end
+
   def seconds_ago(n)
     now - n * 1_000
   end
