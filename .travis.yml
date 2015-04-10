@@ -1,3 +1,11 @@
 language: ruby
+sudo: false
+cache: bundler
 rvm:
-  - 2.2.1
+  - 1.9.3
+  - 2.2.0
+  - jruby-19mode
+services:
+  - redis-server
+jruby_before_script: &jruby_before_script
+  - bundle exec jbundle install
