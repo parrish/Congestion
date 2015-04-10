@@ -4,7 +4,7 @@
 [![Test Coverage](https://codeclimate.com/github/parrish/Congestion/badges/coverage.svg)](https://codeclimate.com/github/parrish/Congestion)
 [![Code Climate](https://codeclimate.com/github/parrish/Congestion/badges/gpa.svg)](https://codeclimate.com/github/parrish/Congestion)
 
-A Redis rate limiter that provides both time-based limits and quantity-based limits.
+A Redis rate limiter that provides both time-based limits and quantity-based limits based on [classdojo/rolling-rate-limiter](https://github.com/classdojo/rolling-rate-limiter).
 
 ## Installation
 
