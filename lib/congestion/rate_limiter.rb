@@ -8,6 +8,7 @@ module Congestion
       self.options = opts
       self.options[:interval] *= 1_000
       self.options[:min_delay] *= 1_000
+      allowed?
     end
 
     def total_requests
@@ -38,7 +39,7 @@ module Congestion
     end
 
     def too_frequent?
-      time_since_last_request < options[:min_delay]
+      last_request && time_since_last_request < options[:min_delay]
     end
 
     def backoff

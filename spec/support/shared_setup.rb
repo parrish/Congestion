@@ -1,14 +1,17 @@
 require 'spec_helper'
 
 RSpec.shared_context 'limiter helpers' do
-  before(:each){ redis.flushall }
+  before(:each){ limiter.redis.flushall }
 
   let(:limiter) do
     Congestion.request('key', {
       namespace: 'test',
       interval: 10,
       min_delay: 5
-    })
+    }).tap do |congestion|
+      # Clear cached request for easier spies
+      congestion.instance_variable_set :@requests, nil
+    end
   end
 
   let(:redis){ Redis.new $REDIS_CONFIG }
