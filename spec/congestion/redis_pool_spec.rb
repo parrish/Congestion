@@ -1,10 +1,9 @@
 require 'spec_helper'
-require 'congestion/redis_pool'
 
 describe Congestion::RedisPool do
   describe '.redis_config' do
     subject{ Congestion::RedisPool.redis_config }
-    it{ is_expected.to eql Hash.new }
+    it{ is_expected.to eql $REDIS_CONFIG }
   end
 
   describe '.pool_size' do
@@ -34,7 +33,7 @@ describe Congestion::RedisPool do
     end
 
     it 'should initialize Redis' do
-      expect(Redis).to receive(:new).with({ }).and_call_original
+      expect(Redis).to receive(:new).with($REDIS_CONFIG).and_call_original
       subject.call
     end
 

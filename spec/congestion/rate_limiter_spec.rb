@@ -99,13 +99,13 @@ describe Congestion::RateLimiter do
 
     it 'should clear old requests' do
       subject
-      count = limiter.redis.zcard limiter.key
+      count = redis.zcard limiter.key
       expect(count).to eql 3
     end
 
     it 'should set the ttl on the key' do
       subject
-      ttl = limiter.redis.ttl limiter.key
+      ttl = redis.ttl limiter.key
       expect(ttl).to be_within(1).of 10 # the interval
     end
 

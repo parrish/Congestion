@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 RSpec.shared_context 'limiter helpers' do
-  before(:each){ limiter.redis.flushall }
+  before(:each){ redis.flushall }
 
   let(:limiter) do
     Congestion.request('key', {
@@ -11,6 +11,7 @@ RSpec.shared_context 'limiter helpers' do
     })
   end
 
+  let(:redis){ Redis.new $REDIS_CONFIG }
   let(:now){ call_protected :current_time }
 
   def stub_limiter(stubs)
@@ -24,16 +25,16 @@ RSpec.shared_context 'limiter helpers' do
   end
 
   def add_request(time)
-    limiter.redis.zadd limiter.key, time, time
+    redis.zadd limiter.key, time, time
   end
 
   def clear_expired
     expired_at = call_protected :expired_at
-    limiter.redis.zremrangebyscore limiter.key, 0, expired_at
+    redis.zremrangebyscore limiter.key, 0, expired_at
   end
 
   def get_values
-    limiter.redis.zrange(limiter.key, 0, -1).map &:to_i
+    redis.zrange(limiter.key, 0, -1).map &:to_i
   end
 
   def call_protected(*args)
