@@ -1,5 +1,9 @@
 # Congestion
 
+[![Build Status](https://travis-ci.org/parrish/Congestion.svg?branch=master)](https://travis-ci.org/parrish/Congestion)
+[![Test Coverage](https://codeclimate.com/github/parrish/Congestion/badges/coverage.svg)](https://codeclimate.com/github/parrish/Congestion)
+[![Code Climate](https://codeclimate.com/github/parrish/Congestion/badges/gpa.svg)](https://codeclimate.com/github/parrish/Congestion)
+
 A Redis rate limiter that provides both time-based limits and quantity-based limits.
 
 ## Installation
