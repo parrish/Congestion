@@ -13,7 +13,7 @@ module Congestion
     interval: 1,             # 1 second
     max_in_interval: 1,      # 1 / second
     min_delay: 0,            # none
-    track_rejected: false
+    track_rejected: true
   }
 
   self.redis = ->{

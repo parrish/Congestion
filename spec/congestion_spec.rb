@@ -13,7 +13,7 @@ describe Congestion do
     its([:interval]){ is_expected.to eql 1 }
     its([:max_in_interval]){ is_expected.to eql 1 }
     its([:min_delay]){ is_expected.to eql 0 }
-    its([:track_rejected]){ is_expected.to be false }
+    its([:track_rejected]){ is_expected.to be true }
   end
 
   describe '.request' do

@@ -85,6 +85,7 @@ describe Congestion::RateLimiter do
 
   describe '#get_requests' do
     subject{ call_protected :get_requests }
+    before(:each){ limiter.options[:track_rejected] = false }
 
     before(:each) do
       [1, 2, 3, 10, 20].each do |n|

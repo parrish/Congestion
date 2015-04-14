@@ -77,7 +77,7 @@ Congestion.default_options = {
   interval: 1,            # The timeframe to limit within in seconds
   max_in_interval: 1,     # The number of allowed requests within the interval
   min_delay: 0.0,         # The minimum amount of time in seconds between requests
-  track_rejected: false   # True if rejected request count towards the limit
+  track_rejected: true    # True if rejected request count towards the limit
 }
 ```
 
