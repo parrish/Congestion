@@ -7,5 +7,9 @@ rvm:
   - jruby-19mode
 services:
   - redis-server
-jruby_before_script: &jruby_before_script
+jruby_before_script:
   - bundle exec jbundle install
+addons:
+  code_climate:
+    repo_token:
+      secure: IRJtjJW5EFgmD8dVa/E338jrnsry1FuKRpz943HKUG0AT2b3PgSafm4DCIycnxCEtvwmTrh75ZNt/9jUQyEktO5NM4f2V2WqlL53wVJPiRwr7kyySbPSeZF6D8/1M95yTphmL6yJ2gLtuJA35lG+hTPq+VkMAQGGu5NcwNp6HkU=
