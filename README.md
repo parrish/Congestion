@@ -3,6 +3,7 @@
 [![Build Status](https://travis-ci.org/parrish/Congestion.svg?branch=master)](https://travis-ci.org/parrish/Congestion)
 [![Test Coverage](https://codeclimate.com/github/parrish/Congestion/badges/coverage.svg)](https://codeclimate.com/github/parrish/Congestion)
 [![Code Climate](https://codeclimate.com/github/parrish/Congestion/badges/gpa.svg)](https://codeclimate.com/github/parrish/Congestion)
+[![Gem Version](https://badge.fury.io/rb/congestion.svg)](http://badge.fury.io/rb/congestion)
 
 A Redis rate limiter that provides both time-based limits and quantity-based limits based on [classdojo/rolling-rate-limiter](https://github.com/classdojo/rolling-rate-limiter).
 
