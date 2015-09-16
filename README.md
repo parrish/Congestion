@@ -7,6 +7,11 @@
 
 A Redis rate limiter that provides both time-based limits and quantity-based limits based on [classdojo/rolling-rate-limiter](https://github.com/classdojo/rolling-rate-limiter).
 
+## Middleware
+
+- [Sidekiq-Congestion](https://github.com/parrish/Sidekiq-Congestion)
+- [Rack-Congestion](https://github.com/parrish/Rack-Congestion)
+
 ## Installation
 
 Add this line to your application's Gemfile:
