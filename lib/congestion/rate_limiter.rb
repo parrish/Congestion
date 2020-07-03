@@ -84,7 +84,17 @@ module Congestion
 
     def add_request
       unless options[:track_rejected]
-        redis.zadd key, current_time, current_time
+        add_request = redis.multi do |t|
+          t.zadd key, current_time, current_time # [0] - key added
+          t.ttl key                              # [1] - key ttl
+        end
+        # TTL is -1 if not set, https://redis.io/commands/ttl
+        if add_request[1] == -1
+          # ensure we set the expire TTL on the request key
+          # using the raw interval here after the 'get_requests' limit check
+          # should be close enough to the actual interval folks desire
+          redis.pexpire key, options[:interval]
+        end
       end
     end
 

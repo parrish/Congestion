@@ -81,6 +81,20 @@ describe Congestion::RateLimiter do
         .with limiter.key, time, time
       subject
     end
+
+    it 'should set the ttl on the key if it is not set' do
+      expect(limiter.redis).to receive(:pexpire).with(limiter.key, limiter.options[:interval]) # the interval
+      subject
+    end
+
+    it 'should not set the ttl on the key if already set' do
+      limiter.redis.multi do |t|
+        t.zadd limiter.key, 1, 1
+        t.pexpire limiter.key, limiter.options[:interval]
+      end
+      expect(limiter.redis).not_to receive(:pexpire)
+      subject
+    end
   end
 
   describe '#get_requests' do
