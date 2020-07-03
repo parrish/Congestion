@@ -100,14 +100,15 @@ module Congestion
 
     def get_requests
       @requests ||= redis.multi do |t|
-        t.zremrangebyscore key, 0, expired_at   # [0] - clear old requests
-        t.zcount key, '-inf', '+inf'            # [1] - number of requests
-        t.zrange key, 0, 0                      # [2] - first request
-        t.zrange key, -1, -1                    # [3] - last request
-        t.pexpire key, options[:interval]       # [4] - expire request key
-
-        # [5] - Add the request if tracking rejected
-        t.zadd(key, current_time, current_time) if options[:track_rejected]
+        t.zremrangebyscore key, 0, expired_at     # [0] - clear old requests
+        t.zcount key, '-inf', '+inf'              # [1] - number of requests
+        t.zrange key, 0, 0                        # [2] - first request
+        t.zrange key, -1, -1                      # [3] - last request
+        if options[:track_rejected]
+          t.zadd(key, current_time, current_time) # [4] - Add the request if tracking rejected
+        end
+        # ensure the TTL is set after we've added the key if tracking rejected
+        t.pexpire key, options[:interval]         # [5] - expire request key
       end
     end
   end
